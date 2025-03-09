@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Column Mapper</title>
+    <style>
+        @media print {
+            .no-print {
+                display: none;
+            }
+
+            @page {
+                margin: 20mm;
+            }
+
+            body::after {
+                content: 'GT Notice';
+                position: fixed;
+                bottom: 10px;
+                left: 10px;
+                font-size: 12px;
+            }
+
+            div {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Upload CSV and Map Columns</h2>
+    <input type="file" id="csvFile" accept=".csv" class="no-print">
+    <br><br>
+    <table id="mappingTable" border="1" style="display:none;">
+        <thead>
+            <tr>
+                <th>CSV Column</th>
+                <th>Map To</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <br>
+    <button id="submitMapping" style="display:none;" class="no-print">Submit Mapping</button>
+    <br><br>
+    <h3>Mapped Data Preview</h3>
+    <div id="teluguHeader" style="text-align: left; margin-bottom: 20px; display: none;">
+        ఫారం-19<br>
+        భూ యాజమాన్య దారులకు నోటీసు<br>
+        భూ నిజ నిర్దారణ కొరకు<br>
+        1) సర్వే సహాయక సంచాలకులు Assistant Director వారి నోటిఫికేషన్ నెం. 6(i), అనుసరించి, శ్రీకాకుళం జిల్లా,
+        కోటబొమ్మాళి మండలం, నారాయణవలస గ్రామములో సీమానిర్ణయం (demarcation) మరియు సర్వే పనులు
+        .............................. తేదీన 8:30 AM గం.ని.లకు ప్రారంభిచబడును అని తెలియజేయడమైనది.<br>
+        2) సర్వే మరియు సరిహద్దుల చట్టం, 1923లోని నియమ నిబంధనలు అనుసరించి సర్వే సమయం నందు ఈ క్రింది షెడ్యూల్ లోని భూ
+        యజమానులు భూమి వద్ద హాజరై మీ పొలము యొక్క సరిహద్దులను చూపించి, తగిన సమాచారం మరియు అవసరమైన సహాయ సహకారములు
+        అందించవలసినదిగా తెలియజేయడమైనది.
+    </div>
+    <table id="previewTable" border="1" style="display:none;">
+        <thead>
+            <tr id="previewHeader"></tr>
+        </thead>
+        <tbody id="previewBody"></tbody>
+    </table>
+    <br>
+    <button onclick="window.print();" class="no-print">Print</button>
+
+    <script>
+        let csvData = [];
+
+        document.getElementById('csvFile').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const rows = e.target.result.split('\n').map(row => row.split(','));
+                csvData = rows.slice(1);
+                const headers = rows[0];
+
+                const mappingFields = ['Survey No', 'Khata No', 'Pattadar Name', 'Relation Name', 'Mobile Number'];
+                const tableBody = document.querySelector('#mappingTable tbody');
+                tableBody.innerHTML = '';
+
+                headers.forEach(header => {
+                    const row = document.createElement('tr');
+
+                    const headerCell = document.createElement('td');
+                    headerCell.textContent = header;
+                    row.appendChild(headerCell);
+
+                    const selectCell = document.createElement('td');
+                    const select = document.createElement('select');
+                    select.innerHTML = `<option value="">-- Select --</option>` +
+                        mappingFields.map(field => `<option value="${field}">${field}</option>`).join('');
+                    selectCell.appendChild(select);
+                    row.appendChild(selectCell);
+
+                    tableBody.appendChild(row);
+                });
+
+                document.getElementById('mappingTable').style.display = 'table';
+                document.getElementById('submitMapping').style.display = 'block';
+            };
+
+            reader.readAsText(file);
+        });
+
+        document.getElementById('submitMapping').addEventListener('click', function () {
+            const selects = document.querySelectorAll('#mappingTable select');
+            const mapping = {};
+
+            selects.forEach((select, index) => {
+                if (select.value) {
+                    mapping[select.value] = index;
+                }
+            });
+
+            const previewHeader = document.getElementById('previewHeader');
+            previewHeader.innerHTML = '';
+            Object.keys(mapping).forEach(field => {
+                const th = document.createElement('th');
+                th.textContent = field;
+                previewHeader.appendChild(th);
+            });
+
+            const previewBody = document.getElementById('previewBody');
+            previewBody.innerHTML = '';
+            csvData.forEach(row => {
+                const tr = document.createElement('tr');
+                Object.values(mapping).forEach(index => {
+                    const td = document.createElement('td');
+                    td.textContent = row[index] || '';
+                    tr.appendChild(td);
+                });
+                previewBody.appendChild(tr);
+            });
+
+            document.getElementById('previewTable').style.display = 'table';
+            document.getElementById('teluguHeader').style.display = 'block';  // Add this line
+        });    </script>
+</body>
+
+</html>
