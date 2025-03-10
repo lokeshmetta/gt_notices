@@ -6,9 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CSV Column Mapper</title>
     <style>
+        body {
+            font-family: 'Gautami', sans-serif;
+        }
+
         /* Styles for both the webpage and print */
         .khata-header {
-            font-weight: bold;
             margin-bottom: 5px;
             display: none;
             /* Hide the Khata No header */
@@ -16,7 +19,7 @@
 
         .telugu-header-print {
             display: none;
-            /* Hide the Telugu Header by default on webpage*/
+            /* Hide the Telugu Header by default on webpage */
         }
 
         .khata-table {
@@ -37,7 +40,13 @@
             }
 
             @page {
-                margin: 20mm;
+                margin: 5mm;
+                border: 1px solid black;
+                /* Add page borders */
+            }
+
+            body {
+                margin: 0;
             }
 
             body::after {
@@ -59,21 +68,18 @@
                 page-break-after: auto;
             }
 
-
             .telugu-header-print {
                 display: block;
                 /* Show the Telugu header in print */
-                text-align: left;
+                text-align: center;
                 margin-bottom: 20px;
                 /* Position the header at the top of the page */
                 width: 100%;
             }
 
-
             .signature-column {
                 width: 150px;
             }
-
         }
 
         /* Non-print styles for the table */
@@ -92,7 +98,18 @@
             text-align: left;
             margin-bottom: 20px;
             display: block;
-            /*Show telugu header on webpage*/
+            /* Show telugu header on webpage */
+        }
+
+        #teluguHeader h3 {
+            margin: 0;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        #teluguHeader p {
+            text-align: left;
+            font-weight: normal;
         }
     </style>
 </head>
@@ -115,15 +132,17 @@
     <br><br>
     <h3>Mapped Data Preview</h3>
     <div id="teluguHeader">
-        ఫారం-19<br>
-        భూ యాజమాన్య దారులకు నోటీసు<br>
-        భూ నిజ నిర్దారణ కొరకు<br>
-        1) సర్వే సహాయక సంచాలకులు Assistant Director వారి నోటిఫికేషన్ నెం. 6(i), అనుసరించి, శ్రీకాకుళం జిల్లా,
-        కోటబొమ్మాళి మండలం, నారాయణవలస గ్రామములో సీమానిర్ణయం (demarcation) మరియు సర్వే పనులు
-        .............................. తేదీన 8:30 AM గం.ని.లకు ప్రారంభిచబడును అని తెలియజేయడమైనది.<br>
-        2) సర్వే మరియు సరిహద్దుల చట్టం, 1923లోని నియమ నిబంధనలు అనుసరించి సర్వే సమయం నందు ఈ క్రింది షెడ్యూల్ లోని భూ
-        యజమానులు భూమి వద్ద హాజరై మీ పొలము యొక్క సరిహద్దులను చూపించి, తగిన సమాచారం మరియు అవసరమైన సహాయ సహకారములు
-        అందించవలసినదిగా తెలియజేయడమైనది.
+        <h3>ఫారం-19</h3>
+        <h3>భూ యాజమాన్య దారులకు నోటీసు</h3>
+        <h3>భూ నిజ నిర్దారణ కొరకు</h3>
+        <p>
+            1) సర్వే సహాయక సంచాలకులు Assistant Director వారి నోటిఫికేషన్ నెం. 6(i), అనుసరించి, శ్రీకాకుళం జిల్లా,
+            కోటబొమ్మాళి మండలం, నారాయణవలస గ్రామములో సీమానిర్ణయం (demarcation) మరియు సర్వే పనులు
+            .............................. తేదీన 8:30 AM గం.ని.లకు ప్రారంభిచబడును అని తెలియజేయడమైనది.<br>
+            2) సర్వే మరియు సరిహద్దుల చట్టం, 1923లోని నియమ నిబంధనలు అనుసరించి సర్వే సమయం నందు ఈ క్రింది షెడ్యూల్ లోని భూ
+            యజమానులు భూమి వద్ద హాజరై మీ పొలము యొక్క సరిహద్దులను చూపించి, తగిన సమాచారం మరియు అవసరమైన సహాయ సహకారములు
+            అందించవలసినదిగా తెలియజేయడమైనది.
+        </p>
     </div>
     <div id="previewContainer">
     </div>
@@ -133,15 +152,17 @@
     <script>
         let csvData = [];
         const teluguHeaderContent = `
-        ఫారం-19<br>
-        భూ యాజమాన్య దారులకు నోటీసు<br>
-        భూ నిజ నిర్దారణ కొరకు<br>
-        1) సర్వే సహాయక సంచాలకులు Assistant Director వారి నోటిఫికేషన్ నెం. 6(i), అనుసరించి, శ్రీకాకుళం జిల్లా,
-        కోటబొమ్మాళి మండలం, నారాయణవలస గ్రామములో సీమానిర్ణయం (demarcation) మరియు సర్వే పనులు
-        .............................. తేదీన 8:30 AM గం.ని.లకు ప్రారంభిచబడును అని తెలియజేయడమైనది.<br>
-        2) సర్వే మరియు సరిహద్దుల చట్టం, 1923లోని నియమ నిబంధనలు అనుసరించి సర్వే సమయం నందు ఈ క్రింది షెడ్యూల్ లోని భూ
-        యజమానులు భూమి వద్ద హాజరై మీ పొలము యొక్క సరిహద్దులను చూపించి, తగిన సమాచారం మరియు అవసరమైన సహాయ సహకారములు
-        అందించవలసినదిగా తెలియజేయడమైనది.
+        <h3>ఫారం-19</h3>
+        <h3>భూ యాజమాన్య దారులకు నోటీసు</h3>
+        <h3>భూ నిజ నిర్దారణ కొరకు</h3>
+        <p>
+            1) సర్వే సహాయక సంచాలకులు Assistant Director వారి నోటిఫికేషన్ నెం. 6(i), అనుసరించి, శ్రీకాకుళం జిల్లా,
+            కోటబొమ్మాళి మండలం, నారాయణవలస గ్రామములో సీమానిర్ణయం (demarcation) మరియు సర్వే పనులు
+            .............................. తేదీన 8:30 AM గం.ని.లకు ప్రారంభిచబడును అని తెలియజేయడమైనది.<br>
+            2) సర్వే మరియు సరిహద్దుల చట్టం, 1923లోని నియమ నిబంధనలు అనుసరించి సర్వే సమయం నందు ఈ క్రింది షెడ్యూల్ లోని భూ
+            యజమానులు భూమి వద్ద హాజరై మీ పొలము యొక్క సరిహద్దులను చూపించి, తగిన సమాచారం మరియు అవసరమైన సహాయ సహకారములు
+            అందించవలసినదిగా తెలియజేయడమైనది.
+        </p>
     `;
 
         document.getElementById('csvFile').addEventListener('change', function (event) {
@@ -260,7 +281,6 @@
             signatureTh.textContent = 'Signature';
             signatureTh.classList.add('signature-column');
             headerRow.appendChild(signatureTh);
-
 
             thead.appendChild(headerRow);
             table.appendChild(thead);
