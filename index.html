@@ -6,6 +6,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CSV Column Mapper</title>
     <style>
+        /* Styles for both the webpage and print */
+        .khata-header {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: none;
+            /* Hide the Khata No header */
+        }
+
+        .telugu-header-print {
+            display: none;
+            /* Hide the Telugu Header by default on webpage*/
+        }
+
+        .khata-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+
+        .khata-table,
+        .khata-table th,
+        .khata-table td {
+            border: 1px solid black;
+        }
+
         @media print {
             .no-print {
                 display: none;
@@ -23,9 +48,51 @@
                 font-size: 12px;
             }
 
-            div {
-                page-break-inside: avoid;
+            .khata-group {
+                page-break-after: always;
+                margin-bottom: 20px;
+                position: relative;
+                /* Add relative positioning */
             }
+
+            .khata-group:last-child {
+                page-break-after: auto;
+            }
+
+
+            .telugu-header-print {
+                display: block;
+                /* Show the Telugu header in print */
+                text-align: left;
+                margin-bottom: 20px;
+                /* Position the header at the top of the page */
+                width: 100%;
+            }
+
+
+            .signature-column {
+                width: 150px;
+            }
+
+        }
+
+        /* Non-print styles for the table */
+        #previewTable {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #previewTable th,
+        #previewTable td {
+            border: 1px solid black;
+            padding: 8px;
+        }
+
+        #teluguHeader {
+            text-align: left;
+            margin-bottom: 20px;
+            display: block;
+            /*Show telugu header on webpage*/
         }
     </style>
 </head>
@@ -47,7 +114,7 @@
     <button id="submitMapping" style="display:none;" class="no-print">Submit Mapping</button>
     <br><br>
     <h3>Mapped Data Preview</h3>
-    <div id="teluguHeader" style="text-align: left; margin-bottom: 20px; display: none;">
+    <div id="teluguHeader">
         ఫారం-19<br>
         భూ యాజమాన్య దారులకు నోటీసు<br>
         భూ నిజ నిర్దారణ కొరకు<br>
@@ -58,17 +125,24 @@
         యజమానులు భూమి వద్ద హాజరై మీ పొలము యొక్క సరిహద్దులను చూపించి, తగిన సమాచారం మరియు అవసరమైన సహాయ సహకారములు
         అందించవలసినదిగా తెలియజేయడమైనది.
     </div>
-    <table id="previewTable" border="1" style="display:none;">
-        <thead>
-            <tr id="previewHeader"></tr>
-        </thead>
-        <tbody id="previewBody"></tbody>
-    </table>
+    <div id="previewContainer">
+    </div>
     <br>
     <button onclick="window.print();" class="no-print">Print</button>
 
     <script>
         let csvData = [];
+        const teluguHeaderContent = `
+        ఫారం-19<br>
+        భూ యాజమాన్య దారులకు నోటీసు<br>
+        భూ నిజ నిర్దారణ కొరకు<br>
+        1) సర్వే సహాయక సంచాలకులు Assistant Director వారి నోటిఫికేషన్ నెం. 6(i), అనుసరించి, శ్రీకాకుళం జిల్లా,
+        కోటబొమ్మాళి మండలం, నారాయణవలస గ్రామములో సీమానిర్ణయం (demarcation) మరియు సర్వే పనులు
+        .............................. తేదీన 8:30 AM గం.ని.లకు ప్రారంభిచబడును అని తెలియజేయడమైనది.<br>
+        2) సర్వే మరియు సరిహద్దుల చట్టం, 1923లోని నియమ నిబంధనలు అనుసరించి సర్వే సమయం నందు ఈ క్రింది షెడ్యూల్ లోని భూ
+        యజమానులు భూమి వద్ద హాజరై మీ పొలము యొక్క సరిహద్దులను చూపించి, తగిన సమాచారం మరియు అవసరమైన సహాయ సహకారములు
+        అందించవలసినదిగా తెలియజేయడమైనది.
+    `;
 
         document.getElementById('csvFile').addEventListener('change', function (event) {
             const file = event.target.files[0];
@@ -111,36 +185,107 @@
         document.getElementById('submitMapping').addEventListener('click', function () {
             const selects = document.querySelectorAll('#mappingTable select');
             const mapping = {};
+            let khataIndex = -1;
 
             selects.forEach((select, index) => {
                 if (select.value) {
                     mapping[select.value] = index;
+                    if (select.value === 'Khata No') {
+                        khataIndex = index;
+                    }
                 }
             });
 
-            const previewHeader = document.getElementById('previewHeader');
-            previewHeader.innerHTML = '';
+            const previewContainer = document.getElementById('previewContainer');
+            previewContainer.innerHTML = '';
+            //no need to show header in webpage
+            //adding telugu header only once
+            // const teluguHeader = document.createElement('div');
+            // teluguHeader.classList.add('telugu-header-print');
+            // teluguHeader.innerHTML = teluguHeaderContent;
+            // previewContainer.appendChild(teluguHeader);
+
+            if (khataIndex === -1) {
+                // If Khata No is not mapped, display all rows in a single table
+                const table = createTable(mapping, csvData, 'All Data');
+                previewContainer.appendChild(table);
+
+            } else {
+                // Group data by Khata No
+                const khataGroups = {};
+                csvData.forEach(row => {
+                    const khataNo = row[khataIndex];
+                    if (!khataGroups[khataNo]) {
+                        khataGroups[khataNo] = [];
+                    }
+                    khataGroups[khataNo].push(row);
+                });
+
+                // Create a table for each Khata No
+                for (const khataNo in khataGroups) {
+                    const table = createTable(mapping, khataGroups[khataNo], khataNo);
+                    previewContainer.appendChild(table);
+                }
+            }
+
+            document.getElementById('teluguHeader').style.display = 'block';
+        });
+
+        function createTable(mapping, data, headerText) {
+            const khataGroup = document.createElement('div');
+            khataGroup.classList.add('khata-group');
+            // Add the Telugu header for print to each khata group
+            const teluguHeader = document.createElement('div');
+            teluguHeader.classList.add('telugu-header-print');
+            teluguHeader.innerHTML = teluguHeaderContent;
+            khataGroup.appendChild(teluguHeader);
+
+            const header = document.createElement('div');
+            header.classList.add('khata-header');
+            header.textContent = headerText;
+            khataGroup.appendChild(header);
+
+            const table = document.createElement('table');
+            table.classList.add('khata-table');
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+
             Object.keys(mapping).forEach(field => {
                 const th = document.createElement('th');
                 th.textContent = field;
-                previewHeader.appendChild(th);
+                headerRow.appendChild(th);
             });
+            // add Signature th
+            const signatureTh = document.createElement('th');
+            signatureTh.textContent = 'Signature';
+            signatureTh.classList.add('signature-column');
+            headerRow.appendChild(signatureTh);
 
-            const previewBody = document.getElementById('previewBody');
-            previewBody.innerHTML = '';
-            csvData.forEach(row => {
+
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+            const tbody = document.createElement('tbody');
+
+            data.forEach(row => {
                 const tr = document.createElement('tr');
                 Object.values(mapping).forEach(index => {
                     const td = document.createElement('td');
                     td.textContent = row[index] || '';
                     tr.appendChild(td);
                 });
-                previewBody.appendChild(tr);
+                // Add empty Signature td
+                const signatureTd = document.createElement('td');
+                signatureTd.classList.add('signature-column');
+                tr.appendChild(signatureTd);
+
+                tbody.appendChild(tr);
             });
 
-            document.getElementById('previewTable').style.display = 'table';
-            document.getElementById('teluguHeader').style.display = 'block';  // Add this line
-        });    </script>
+            table.appendChild(tbody);
+            khataGroup.appendChild(table);
+            return khataGroup;
+        }
+    </script>
 </body>
 
 </html>
