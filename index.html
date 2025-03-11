@@ -8,7 +8,7 @@
     <style>
         body {
             font-family: 'Gautami', sans-serif;
-            margin: 20px;
+            margin: 10em;
             /* Reset default body margin */
             position: relative;
             /* To position the footer */
@@ -45,7 +45,7 @@
         .khata-table th {
             padding: 5px;
             text-align: left;
-            vertical-align: top;
+            vertical-align: middle;
             word-wrap: break-word;
             /* Key Change: Allow text wrapping */
             overflow: hidden;
@@ -63,7 +63,8 @@
             left: 10px;
             width: calc(100% - 20px);
             /* Full width minus left/right padding */
-            font-size: 12px;
+            font-size: 16px;
+            font-weight: bold;
             display: flex;
             flex-direction: column;
             /* margin-top: 20px; Removed for proper alignment*/
@@ -147,6 +148,7 @@
             }
 
             .telugu-header-print p {
+                margin: 0px;
                 text-align: left;
                 padding-left: 10px;
                 padding-right: 10px;
@@ -232,23 +234,24 @@
 </head>
 
 <body>
-    <h2>Upload CSV and Map Columns</h2>
-    <input type="file" id="csvFile" accept=".csv" class="no-print">
-    <br><br>
-    <table id="mappingTable" border="1" style="display:none;">
-        <thead>
-            <tr>
-                <th>Map To</th>
-                <th>CSV Column</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-    <br>
-    <button id="submitMapping" style="display:none;" class="no-print">Submit Mapping</button>
-    <br><br>
-    <h3>Mapped Data Preview</h3>
-    <div id="teluguHeader">
+    <div class="no-print">
+        <h2>Upload CSV and Map Columns</h2>
+        <input type="file" id="csvFile" accept=".csv" class="no-print">
+        <br><br>
+        <table id="mappingTable" border="1" style="display:none;" class="no-print">
+            <thead>
+                <tr>
+                    <th>Map To</th>
+                    <th>CSV Column</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <br>
+        <button id="submitMapping" style="display:none;" class="no-print">Submit Mapping</button>
+        <br><br>
+    </div>
+    <div id="teluguHeader" class="no-print">
         <h3>ఫారం-19</h3>
         <h3>భూ యాజమాన్య దారులకు నోటీసు</h3>
         <h3>భూ నిజ నిర్దారణ కొరకు</h3>
@@ -369,6 +372,11 @@
                 for (const khataNo in khataGroups) {
                     const table = createTable(mapping, khataGroups[khataNo], khataNo);
                     const khataGroup = table.parentElement;
+                    // Add telugu header to each khata group in print
+                    const teluguHeader = document.createElement('div');
+                    teluguHeader.classList.add('telugu-header-print');
+                    teluguHeader.innerHTML = teluguHeaderContent;
+                    khataGroup.insertBefore(teluguHeader, table);
                     previewContainer.appendChild(khataGroup);
                     const footer = document.createElement('div');
                     footer.classList.add('page-footer');
@@ -378,6 +386,11 @@
             } else {
                 const table = createTable(mapping, csvData, 'All Data');
                 const khataGroup = table.parentElement;
+                // Add telugu header to each khata group in print
+                const teluguHeader = document.createElement('div');
+                teluguHeader.classList.add('telugu-header-print');
+                teluguHeader.innerHTML = teluguHeaderContent;
+                khataGroup.insertBefore(teluguHeader, table);
                 previewContainer.appendChild(khataGroup);
                 const footer = document.createElement('div');
                 footer.classList.add('page-footer');
@@ -386,16 +399,13 @@
 
             }
 
-            document.getElementById('teluguHeader').style.display = 'block';
+            document.getElementById('teluguHeader').style.display = 'none';
         });
 
         function createTable(mapping, data, headerText) {
             const khataGroup = document.createElement('div');
             khataGroup.classList.add('khata-group');
-            const teluguHeader = document.createElement('div');
-            teluguHeader.classList.add('telugu-header-print');
-            teluguHeader.innerHTML = teluguHeaderContent;
-            khataGroup.appendChild(teluguHeader);
+
 
             const header = document.createElement('div');
             header.classList.add('khata-header');
