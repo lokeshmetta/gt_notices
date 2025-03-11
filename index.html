@@ -8,7 +8,7 @@
     <style>
         body {
             font-family: 'Gautami', sans-serif;
-            margin: 0;
+            margin: 20px;
             /* Reset default body margin */
             position: relative;
             /* To position the footer */
@@ -50,6 +50,10 @@
             /* Key Change: Allow text wrapping */
             overflow: hidden;
             /* Hide any overflow */
+        }
+
+        .khata-table th {
+            text-align: center;
         }
 
         /* New Footer Styles (Moved outside @media print) */
@@ -280,15 +284,22 @@
         </p>
     `;
 
-        const mappingFields = ['Survey No', 'Khata No', 'Pattadar Name', 'Relation Name', 'Mobile Number'];
+        const mappingFields = [
+            { en: 'Survey No', te: 'సర్వే నెం' },
+            { en: 'Khata No', te: 'ఖాతా సంఖ్య' },
+            { en: 'Pattadar Name', te: 'భూ యజమాని పేరు' },
+            { en: 'Relation Name', te: 'భర్త/తండ్రి పేరు' },
+            { en: 'Mobile Number', te: 'మొబైల్ నెంబరు' }
+        ];
+        const teluguMappingFields = mappingFields.map(field => field.te);
         // Add content to body::after
         const placeDateContent = `<div class="footer-row">
                 <div class="left-column">
-                    <p class="body-footer-text">Place: </p>
-                    <p class="body-footer-text">Date: </p>
+                    <p class="body-footer-text">స్తలం: </p>
+                    <p class="body-footer-text">తేది: </p>
                 </div>
                 <div class="right-column">
-                    <p class="body-footer-text">Sign of Surveyor</p>
+                    <p class="body-footer-text">గ్రామ సర్వేయర్ సంతకం</p>
                 </div>
             </div>`;
         document.getElementById('csvFile').addEventListener('change', function (event) {
@@ -308,7 +319,7 @@
                     const row = document.createElement('tr');
 
                     const fieldCell = document.createElement('td');
-                    fieldCell.textContent = field;
+                    fieldCell.textContent = field.en; // Use English name for mapping
                     row.appendChild(fieldCell);
 
                     const selectCell = document.createElement('td');
@@ -337,7 +348,7 @@
 
             selects.forEach((select, index) => {
                 if (select.value) {
-                    mapping[mappingFields[index]] = select.value; // Map field to CSV header
+                    mapping[mappingFields[index].en] = select.value; // Map field to CSV header
 
                 }
             });
@@ -396,13 +407,14 @@
             const thead = document.createElement('thead');
             const headerRow = document.createElement('tr');
 
-            mappingFields.forEach(field => { // Use mappingFields for table headers
+            teluguMappingFields.forEach(field => {
                 const th = document.createElement('th');
                 th.textContent = field;
                 headerRow.appendChild(th);
             });
+
             const signatureTh = document.createElement('th');
-            signatureTh.textContent = 'Signature';
+            signatureTh.textContent = 'సంతకం';
             signatureTh.classList.add('signature-column');
             headerRow.appendChild(signatureTh);
 
@@ -414,7 +426,7 @@
                 const tr = document.createElement('tr');
                 mappingFields.forEach(field => {
                     const td = document.createElement('td');
-                    const csvHeader = mapping[field];
+                    const csvHeader = mapping[field.en];
                     if (csvHeader) {
                         const index = headers.indexOf(csvHeader);
                         if (index >= 0) {
