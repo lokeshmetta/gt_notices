@@ -164,7 +164,10 @@
                 bottom: auto;
             }
 
+            #teluguHeader {
 
+                display: none !important;
+            }
         }
 
         /* Non-print styles for the table */
@@ -399,13 +402,11 @@
 
             }
 
-            document.getElementById('teluguHeader').style.display = 'none';
         });
 
         function createTable(mapping, data, headerText) {
             const khataGroup = document.createElement('div');
             khataGroup.classList.add('khata-group');
-
 
             const header = document.createElement('div');
             header.classList.add('khata-header');
@@ -414,6 +415,20 @@
 
             const table = document.createElement('table');
             table.classList.add('khata-table');
+
+            // Added colgroup for column width adjustments
+            const colgroup = document.createElement('colgroup');
+            for (let i = 0; i < mappingFields.length; i++) {
+                const col = document.createElement('col');
+                if (i === 0 || i === 1 || i === 4) {
+                    col.style.width = "max-content";
+                } else {
+                    col.style.width = "auto";
+                }
+                colgroup.appendChild(col);
+            }
+            table.appendChild(colgroup);
+
             const thead = document.createElement('thead');
             const headerRow = document.createElement('tr');
 
@@ -430,8 +445,8 @@
 
             thead.appendChild(headerRow);
             table.appendChild(thead);
-            const tbody = document.createElement('tbody');
 
+            const tbody = document.createElement('tbody');
             data.forEach(row => {
                 const tr = document.createElement('tr');
                 mappingFields.forEach(field => {
@@ -440,20 +455,16 @@
                     if (csvHeader) {
                         const index = headers.indexOf(csvHeader);
                         if (index >= 0) {
-                            td.textContent = row[index] || ''; // Get value from row using mapped CSV index
+                            td.textContent = row[index] || '';
                         }
                     }
-
                     tr.appendChild(td);
                 });
-
                 const signatureTd = document.createElement('td');
                 signatureTd.classList.add('signature-column');
                 tr.appendChild(signatureTd);
-
                 tbody.appendChild(tr);
             });
-
             table.appendChild(tbody);
 
             khataGroup.appendChild(table);
