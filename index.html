@@ -50,7 +50,7 @@
             }
 
             body::after {
-                content: 'GT Notice';
+                content: 'Place';
                 position: fixed;
                 bottom: 10px;
                 left: 10px;
@@ -59,7 +59,7 @@
 
             .khata-group {
                 page-break-after: always;
-                margin-bottom: 20px;
+                margin-bottom: 0px;
                 position: relative;
                 /* Add relative positioning */
             }
@@ -71,11 +71,26 @@
             .telugu-header-print {
                 display: block;
                 /* Show the Telugu header in print */
-                text-align: center;
-                margin-bottom: 20px;
+                text-align: left;
+                margin-bottom: 0px;
                 /* Position the header at the top of the page */
                 width: 100%;
             }
+
+            .telugu-header-print h3 {
+                margin: 0;
+                text-align: center;
+                font-weight: bold;
+            }
+
+            .telugu-header-print p {
+                text-align: left;
+                padding-left: 10px;
+                padding-right: 10px;
+                font-weight: normal;
+            }
+
+
 
             .signature-column {
                 width: 150px;
@@ -91,12 +106,12 @@
         #previewTable th,
         #previewTable td {
             border: 1px solid black;
-            padding: 8px;
+            padding: 5px;
         }
 
         #teluguHeader {
-            text-align: left;
-            margin-bottom: 20px;
+            text-align: center;
+            margin-bottom: 0px;
             display: block;
             /* Show telugu header on webpage */
         }
