@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CSV Column Mapper</title>
+    <title>Ground Truthing Notice Generation</title>
     <style>
         body {
             font-family: 'Gautami', sans-serif;
@@ -276,9 +276,26 @@
 <body>
     <div class="no-print">
         <h2>Upload CSV and Map Columns</h2>
-        <input type="file" id="csvFile" accept=".csv" class="no-print">
+
+        <h2>Enter Location Details</h2>
+        <div style="margin-bottom: 15px;">
+            <label for="districtName">District Name:</label>
+            <input type="text" id="districtName" placeholder="Enter District Name">
+
+            <label for="mandalName">Mandal Name:</label>
+            <input type="text" id="mandalName" placeholder="Enter Mandal Name">
+
+            <label for="villageName">Village Name:</label>
+            <input type="text" id="villageName" placeholder="Enter Village Name">
+            <label for="start_date">Date:</label>
+            <input type="date" id="start_date" placeholder="Enter Date of Commencement">
+            <label for="start_time">Time:</label>
+            <input type="time" id="start_time" placeholder="Enter time of Commencement">
+        </div>
+
+        <input type="file" id="csvFile" accept=".csv">
         <br><br>
-        <table id="mappingTable" border="1" style="display:none;" class="no-print">
+        <table id="mappingTable" border="1" style="display:none;">
             <thead>
                 <tr>
                     <th>Map To</th>
@@ -288,17 +305,18 @@
             <tbody></tbody>
         </table>
         <br>
-        <button id="submitMapping" style="display:none;" class="no-print">Submit Mapping</button>
+        <button id="submitMapping" style="display:none;">Submit Mapping</button>
         <br><br>
+        <button onclick="window.print();">Print</button>
     </div>
     <div id="teluguHeader" class="">
         <h3>ఫారం-19</h3>
         <h3>భూ యాజమాన్య దారులకు నోటీసు</h3>
         <h3>భూ నిజ నిర్దారణ కొరకు</h3>
         <p>
-            1) సర్వే సహాయక సంచాలకులు Assistant Director వారి నోటిఫికేషన్ నెం. 6(i), అనుసరించి, శ్రీకాకుళం జిల్లా,
-            కోటబొమ్మాళి మండలం, నారాయణవలస గ్రామములో సీమానిర్ణయం (demarcation) మరియు సర్వే పనులు
-            .............................. తేదీన 8:30 AM గం.ని.లకు ప్రారంభిచబడును అని తెలియజేయడమైనది.<br>
+            1) సర్వే సహాయక సంచాలకులు Assistant Director వారి నోటిఫికేషన్ నెం. 6(i), అనుసరించి, ........ జిల్లా,
+            .......... మండలం, ........... గ్రామములో సీమానిర్ణయం (demarcation) మరియు సర్వే పనులు
+            ...................... తేదీన .... గం.ని.లకు ప్రారంభిచబడును అని తెలియజేయడమైనది.<br>
             2) సర్వే మరియు సరిహద్దుల చట్టం, 1923లోని నియమ నిబంధనలు అనుసరించి సర్వే సమయం నందు ఈ క్రింది షెడ్యూల్ లోని భూ
             యజమానులు భూమి వద్ద హాజరై మీ పొలము యొక్క సరిహద్దులను చూపించి, తగిన సమాచారం మరియు అవసరమైన సహాయ సహకారములు
             అందించవలసినదిగా తెలియజేయడమైనది.
@@ -307,25 +325,13 @@
     <div id="previewContainer">
     </div>
     <br>
-    <button onclick="window.print();" class="no-print">Print</button>
 
 
     <script>
         let csvData = [];
         let headers = []; // Declare headers here
-        const teluguHeaderContent = `
-        <h3>ఫారం-19<br>
-        భూ యాజమాన్య దారులకు నోటీసు<br>
-        భూ నిజ నిర్దారణ కొరకు</h3>
-        <p>
-            1) సర్వే సహాయక సంచాలకులు Assistant Director వారి నోటిఫికేషన్ నెం. 6(i), అనుసరించి, శ్రీకాకుళం జిల్లా,
-            కోటబొమ్మాళి మండలం, నారాయణవలస గ్రామములో సీమానిర్ణయం (demarcation) మరియు సర్వే పనులు
-            .............................. తేదీన 8:30 AM గం.ని.లకు ప్రారంభిచబడును అని తెలియజేయడమైనది.<br>
-            2) సర్వే మరియు సరిహద్దుల చట్టం, 1923లోని నియమ నిబంధనలు అనుసరించి సర్వే సమయం నందు ఈ క్రింది షెడ్యూల్ లోని భూ
-            యజమానులు భూమి వద్ద హాజరై మీ పొలము యొక్క సరిహద్దులను చూపించి, తగిన సమాచారం మరియు అవసరమైన సహాయ సహకారములు
-            అందించవలసినదిగా తెలియజేయడమైనది.
-        </p>
-    `;
+
+        ;
 
         const mappingFields = [
             { en: 'Survey No', te: 'సర్వే నెం' },
@@ -388,6 +394,38 @@
             const selects = document.querySelectorAll('#mappingTable select');
             const mapping = {};
             let khataIndex = -1;
+
+            // Get values from input fields
+            const districtName = document.getElementById('districtName').value;
+            const mandalName = document.getElementById('mandalName').value;
+            const villageName = document.getElementById('villageName').value;
+            const start_date = document.getElementById('start_date').value;
+            const timeInput = document.getElementById('start_time').value;
+            let start_time = '';
+            if (timeInput) {
+                const [hours, minutes] = timeInput.split(':');
+                const time = new Date();
+                time.setHours(hours);
+                time.setMinutes(minutes);
+                start_time = time.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+            }
+
+            // Update teluguHeaderContent with input values
+            teluguHeaderContent = `
+                <h3>ఫారం-19<br>
+                భూ యాజమాన్య దారులకు నోటీసు<br>
+                భూ నిజ నిర్దారణ కొరకు</h3>
+                <p>
+                1) సర్వే సహాయక సంచాలకులు Assistant Director వారి నోటిఫికేషన్ నెం. 6(i), అనుసరించి, ${districtName || '____________________'} జిల్లా,
+                    ${mandalName || '_____________________'} మండలం, ${villageName || '____________________'} గ్రామములో సీమానిర్ణయం (demarcation) మరియు సర్వే పనులు
+                    ${start_date || '_____________'} తేదీన ${start_time || '________'} గం.ని.లకు ప్రారంభిచబడును అని తెలియజేయడమైనది.<br>
+                    2) సర్వే మరియు సరిహద్దుల చట్టం, 1923లోని నియమ నిబంధనలు అనుసరించి సర్వే సమయం నందు ఈ క్రింది షెడ్యూల్ లోని భూ
+                    యజమానులు భూమి వద్ద హాజరై మీ పొలము యొక్క సరిహద్దులను చూపించి, తగిన సమాచారం మరియు అవసరమైన సహాయ సహకారములు
+                    అందించవలసినదిగా తెలియజేయడమైనది.
+                </p>
+            `;
+
+            document.getElementById('teluguHeader').innerHTML = teluguHeaderContent;
 
             selects.forEach((select, index) => {
                 if (select.value) {
