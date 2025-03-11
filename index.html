@@ -24,6 +24,8 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 10px;
+            table-layout: fixed;
+            /* Key Change: Fixed table layout */
         }
 
         .khata-table,
@@ -37,9 +39,11 @@
         .khata-table th {
             padding: 5px;
             text-align: left;
-            /* Align text to the left */
             vertical-align: top;
-            /* Key Change: Align content to the top */
+            word-wrap: break-word;
+            /* Key Change: Allow text wrapping */
+            overflow: hidden;
+            /* Hide any overflow */
         }
 
         @media print {
@@ -57,7 +61,7 @@
             }
 
             body::after {
-                content: 'Place';
+                content: 'స్తలం:<br>తేది:';
                 position: fixed;
                 bottom: 10px;
                 left: 10px;
@@ -82,7 +86,7 @@
             }
 
             .telugu-header-print h3 {
-                margin: 0;
+                margin-top: 10px;
                 text-align: center;
                 font-weight: bold;
             }
@@ -104,7 +108,6 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
-            /* Add some spacing between tables */
         }
 
         #previewTable th,
@@ -112,19 +115,15 @@
             border: 1px solid black;
             padding: 5px;
             text-align: left;
-            /* Align text to the left */
             vertical-align: top;
-            /* Key Change: Align content to the top */
         }
 
         /* Add styles for the mapping table to make it aligned */
         #mappingTable {
             width: auto;
-            /* Adjust width to content */
             border-collapse: collapse;
             margin-bottom: 20px;
             border: 1px solid black;
-
         }
 
         #mappingTable th,
@@ -134,13 +133,11 @@
             text-align: left;
             vertical-align: middle;
             white-space: nowrap;
-            /* Prevents text wrapping */
         }
 
         #mappingTable select {
             width: 100%;
             box-sizing: border-box;
-            /* Include padding in element width */
         }
 
         #teluguHeader {
@@ -163,13 +160,11 @@
         /* Add a container for better alignment of the select column */
         .select-container {
             width: 150px;
-            /* Adjust as needed */
             display: inline-block;
         }
 
         #previewContainer {
             overflow-x: auto;
-            /* Enable horizontal scrolling if needed */
         }
     </style>
 </head>
@@ -181,8 +176,8 @@
     <table id="mappingTable" border="1" style="display:none;">
         <thead>
             <tr>
-                <th>CSV Column</th>
                 <th>Map To</th>
+                <th>CSV Column</th>
             </tr>
         </thead>
         <tbody></tbody>
@@ -211,10 +206,11 @@
 
     <script>
         let csvData = [];
+        let headers = []; // Declare headers here
         const teluguHeaderContent = `
-        <h3>ఫారం-19</h3>
-        <h3>భూ యాజమాన్య దారులకు నోటీసు</h3>
-        <h3>భూ నిజ నిర్దారణ కొరకు</h3>
+        <h3>ఫారం-19<br>
+        భూ యాజమాన్య దారులకు నోటీసు<br>
+        భూ నిజ నిర్దారణ కొరకు</h3>
         <p>
             1) సర్వే సహాయక సంచాలకులు Assistant Director వారి నోటిఫికేషన్ నెం. 6(i), అనుసరించి, శ్రీకాకుళం జిల్లా,
             కోటబొమ్మాళి మండలం, నారాయణవలస గ్రామములో సీమానిర్ణయం (demarcation) మరియు సర్వే పనులు
@@ -225,6 +221,8 @@
         </p>
     `;
 
+        const mappingFields = ['Survey No', 'Khata No', 'Pattadar Name', 'Relation Name', 'Mobile Number'];
+
         document.getElementById('csvFile').addEventListener('change', function (event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -233,29 +231,29 @@
             reader.onload = function (e) {
                 const rows = e.target.result.split('\n').map(row => row.split(','));
                 csvData = rows.slice(1);
-                const headers = rows[0];
+                headers = rows[0]; // Assign headers here!
 
-                const mappingFields = ['Survey No', 'Khata No', 'Pattadar Name', 'Relation Name', 'Mobile Number'];
                 const tableBody = document.querySelector('#mappingTable tbody');
                 tableBody.innerHTML = '';
 
-                headers.forEach(header => {
+                mappingFields.forEach(field => {
                     const row = document.createElement('tr');
 
-                    const headerCell = document.createElement('td');
-                    headerCell.textContent = header;
-                    row.appendChild(headerCell);
+                    const fieldCell = document.createElement('td');
+                    fieldCell.textContent = field;
+                    row.appendChild(fieldCell);
 
                     const selectCell = document.createElement('td');
                     selectCell.classList.add('select-container')
                     const select = document.createElement('select');
                     select.innerHTML = `<option value="">-- Select --</option>` +
-                        mappingFields.map(field => `<option value="${field}">${field}</option>`).join('');
+                        headers.map(header => `<option value="${header}">${header}</option>`).join('');
                     selectCell.appendChild(select);
                     row.appendChild(selectCell);
 
                     tableBody.appendChild(row);
                 });
+
 
                 document.getElementById('mappingTable').style.display = 'table';
                 document.getElementById('submitMapping').style.display = 'block';
@@ -271,24 +269,18 @@
 
             selects.forEach((select, index) => {
                 if (select.value) {
-                    mapping[select.value] = index;
-                    if (select.value === 'Khata No') {
-                        khataIndex = index;
-                    }
+                    mapping[mappingFields[index]] = select.value; // Map field to CSV header
+
                 }
             });
 
             const previewContainer = document.getElementById('previewContainer');
             previewContainer.innerHTML = '';
 
-            if (khataIndex === -1) {
-                const table = createTable(mapping, csvData, 'All Data');
-                previewContainer.appendChild(table);
-
-            } else {
+            if (mapping["Khata No"]) {
                 const khataGroups = {};
                 csvData.forEach(row => {
-                    const khataNo = row[khataIndex];
+                    const khataNo = row[headers.indexOf(mapping["Khata No"])];
                     if (!khataGroups[khataNo]) {
                         khataGroups[khataNo] = [];
                     }
@@ -299,6 +291,10 @@
                     const table = createTable(mapping, khataGroups[khataNo], khataNo);
                     previewContainer.appendChild(table);
                 }
+            } else {
+                const table = createTable(mapping, csvData, 'All Data');
+                previewContainer.appendChild(table);
+
             }
 
             document.getElementById('teluguHeader').style.display = 'block';
@@ -322,7 +318,7 @@
             const thead = document.createElement('thead');
             const headerRow = document.createElement('tr');
 
-            Object.keys(mapping).forEach(field => {
+            mappingFields.forEach(field => { // Use mappingFields for table headers
                 const th = document.createElement('th');
                 th.textContent = field;
                 headerRow.appendChild(th);
@@ -338,11 +334,16 @@
 
             data.forEach(row => {
                 const tr = document.createElement('tr');
-                Object.values(mapping).forEach(index => {
+                mappingFields.forEach(field => {
                     const td = document.createElement('td');
-                    td.textContent = row[index] || '';
+                    const csvHeader = mapping[field];
+                    if (csvHeader) {
+                        const index = headers.indexOf(csvHeader);
+                        td.textContent = row[index] || ''; // Get value from row using mapped CSV index
+                    }
                     tr.appendChild(td);
                 });
+
                 const signatureTd = document.createElement('td');
                 signatureTd.classList.add('signature-column');
                 tr.appendChild(signatureTd);
