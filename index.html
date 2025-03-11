@@ -8,6 +8,12 @@
     <style>
         body {
             font-family: 'Gautami', sans-serif;
+            margin: 0;
+            /* Reset default body margin */
+            position: relative;
+            /* To position the footer */
+            min-height: 100vh;
+            /* Ensure body takes full viewport height */
         }
 
         /* Styles for both the webpage and print */
@@ -46,6 +52,42 @@
             /* Hide any overflow */
         }
 
+        /* New Footer Styles (Moved outside @media print) */
+        .page-footer {
+            /* position: fixed; Removed fixed*/
+            bottom: 10px;
+            left: 10px;
+            width: calc(100% - 20px);
+            /* Full width minus left/right padding */
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            /* margin-top: 20px; Removed for proper alignment*/
+            padding-top: 50px;
+            /* Added padding-top for space*/
+        }
+
+        .footer-row {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .right-column {
+            text-align: right;
+            padding-right: 60px;
+        }
+
+        .body-footer-text {
+            text-align: left;
+            margin: 0;
+        }
+
         @media print {
             .no-print {
                 display: none;
@@ -58,20 +100,29 @@
 
             body {
                 margin: 0;
-            }
-
-            body::after {
-                content: 'స్తలం:<br>తేది:';
-                position: fixed;
-                bottom: 10px;
-                left: 10px;
-                font-size: 12px;
+                /* Remove body margin in print */
+                min-height: auto;
+                /*position: relative; Remove this as footer is fixed  */
+                /* Add position relative to body */
             }
 
             .khata-group {
                 page-break-after: always;
                 margin-bottom: 0px;
                 position: relative;
+                display: flex;
+                /* Added to make flex work*/
+                flex-direction: column;
+                /* Added to make flex work*/
+                justify-content: space-between;
+                /* Added to make flex work*/
+
+            }
+
+            .khata-group .page-footer {
+                position: relative;
+                margin-top: auto;
+                /* Push footer to bottom */
             }
 
             .khata-group:last-child {
@@ -101,6 +152,13 @@
             .signature-column {
                 width: 150px;
             }
+
+            .page-footer {
+                position: relative;
+                bottom: auto;
+            }
+
+
         }
 
         /* Non-print styles for the table */
@@ -204,6 +262,7 @@
     <br>
     <button onclick="window.print();" class="no-print">Print</button>
 
+
     <script>
         let csvData = [];
         let headers = []; // Declare headers here
@@ -222,7 +281,16 @@
     `;
 
         const mappingFields = ['Survey No', 'Khata No', 'Pattadar Name', 'Relation Name', 'Mobile Number'];
-
+        // Add content to body::after
+        const placeDateContent = `<div class="footer-row">
+                <div class="left-column">
+                    <p class="body-footer-text">Place: </p>
+                    <p class="body-footer-text">Date: </p>
+                </div>
+                <div class="right-column">
+                    <p class="body-footer-text">Sign of Surveyor</p>
+                </div>
+            </div>`;
         document.getElementById('csvFile').addEventListener('change', function (event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -289,11 +357,21 @@
 
                 for (const khataNo in khataGroups) {
                     const table = createTable(mapping, khataGroups[khataNo], khataNo);
-                    previewContainer.appendChild(table);
+                    const khataGroup = table.parentElement;
+                    previewContainer.appendChild(khataGroup);
+                    const footer = document.createElement('div');
+                    footer.classList.add('page-footer');
+                    footer.innerHTML = placeDateContent;
+                    khataGroup.appendChild(footer);
                 }
             } else {
                 const table = createTable(mapping, csvData, 'All Data');
-                previewContainer.appendChild(table);
+                const khataGroup = table.parentElement;
+                previewContainer.appendChild(khataGroup);
+                const footer = document.createElement('div');
+                footer.classList.add('page-footer');
+                footer.innerHTML = placeDateContent;
+                khataGroup.appendChild(footer);
 
             }
 
@@ -339,8 +417,11 @@
                     const csvHeader = mapping[field];
                     if (csvHeader) {
                         const index = headers.indexOf(csvHeader);
-                        td.textContent = row[index] || ''; // Get value from row using mapped CSV index
+                        if (index >= 0) {
+                            td.textContent = row[index] || ''; // Get value from row using mapped CSV index
+                        }
                     }
+
                     tr.appendChild(td);
                 });
 
@@ -352,9 +433,14 @@
             });
 
             table.appendChild(tbody);
+
             khataGroup.appendChild(table);
-            return khataGroup;
+            return table;
         }
+
+
+
+
     </script>
 </body>
 
