@@ -6,17 +6,271 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ground Truthing Notice Generation</title>
     <style>
-        body {
-            font-family: 'Gautami', sans-serif;
-            margin: 10em;
-            /* Reset default body margin */
-            position: relative;
-            /* To position the footer */
-            min-height: 100vh;
-            /* Ensure body takes full viewport height */
+        :root {
+            --primary-color: #4a90e2;
+            --background-color: #f5f6fa;
+            --border-color: #dcdde1;
+            --text-color: #2d3436;
+            --spacing-unit: 1rem;
         }
 
-        /* Styles for both the webpage and print */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Gautami', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: var(--spacing-unit);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--spacing-unit);
+        }
+
+        .form-section {
+            background: white;
+            padding: var(--spacing-unit);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: var(--spacing-unit);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: var(--spacing-unit);
+            gap: 0.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .form-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: var(--spacing-unit);
+            }
+        }
+
+        label {
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        input[type="file"],
+        select {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            width: 100%;
+            max-width: 300px;
+            margin: var(--spacing-unit) 0;
+        }
+
+        @media (min-width: 768px) {
+            button {
+                width: auto;
+            }
+        }
+
+        /* Responsive table styles */
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: var(--spacing-unit);
+        }
+
+        #mappingTable {
+            min-width: 100%;
+            background: white;
+            border-radius: 8px;
+            border-collapse: collapse;
+        }
+
+        #mappingTable th,
+        #mappingTable td {
+            padding: 0.75rem;
+            text-align: left;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Preserve existing print styles */
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            .container {
+                max-width: none;
+                padding: 0;
+            }
+
+            .no-print {
+                display: none;
+            }
+
+            @page {
+                margin: 5mm;
+                border: 1px solid black;
+                padding: 8px;
+            }
+
+            body {
+                margin: 0;
+                min-height: auto;
+            }
+
+            .khata-group {
+                page-break-after: always;
+                margin-bottom: 0px;
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+            }
+
+            .khata-group .page-footer {
+                position: relative;
+                margin-top: auto;
+            }
+
+            .khata-group:last-child {
+                page-break-after: auto;
+            }
+
+            .telugu-header-print {
+                display: block;
+                text-align: left;
+                margin-bottom: 0px;
+                width: 100%;
+            }
+
+            .telugu-header-print h3 {
+                margin-top: 10px;
+                text-align: center;
+                font-weight: bold;
+            }
+
+            .telugu-header-print p {
+                margin: 0px;
+                text-align: left;
+                font-weight: normal;
+            }
+
+            .signature-column {
+                width: 150px;
+            }
+
+            .page-footer {
+                position: relative;
+                bottom: auto;
+            }
+
+            #teluguHeader {
+                display: none !important;
+            }
+
+            .khata-table.print-table col:nth-child(1) {
+                width: 100px;
+                max-width: max-content;
+            }
+
+            .khata-table.print-table col:nth-child(2) {
+                width: 80px;
+            }
+
+            .khata-table.print-table col:nth-child(5) {
+                width: 110px;
+            }
+
+            .khata-table.print-table col:nth-child(3),
+            .khata-table.print-table col:nth-child(4) {
+                width: calc((100% - 450px) / 2);
+            }
+
+            .khata-table.print-table .signature-column {
+                width: 150px !important;
+            }
+
+            .khata-table.print-table td,
+            .khata-table.print-table th {
+                word-break: break-word;
+                white-space: normal;
+            }
+        }
+
+        /* Telugu header responsive styles */
+        #teluguHeader {
+            padding: var(--spacing-unit);
+            margin-bottom: var(--spacing-unit);
+        }
+
+        #teluguHeader h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Responsive preview container */
+        #previewContainer {
+            overflow-x: auto;
+            background: white;
+            padding: var(--spacing-unit);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Keep existing khata-table styles but make it responsive */
+        .khata-table {
+            min-width: 100%;
+        }
+
+        @media (max-width: 768px) {
+
+            .khata-table td,
+            .khata-table th {
+                min-width: 120px;
+            }
+        }
+
+        /* Footer responsive styles */
+        .page-footer {
+            margin-top: var(--spacing-unit);
+        }
+
+        .footer-row {
+            flex-direction: column;
+            gap: var(--spacing-unit);
+        }
+
+        @media (min-width: 768px) {
+            .footer-row {
+                flex-direction: row;
+            }
+
+            .right-column {
+                text-align: right;
+            }
+        }
+
+        /* Preserve all other existing styles */
         .khata-header {
             margin-bottom: 5px;
             display: none;
@@ -31,7 +285,6 @@
             border-collapse: collapse;
             margin-bottom: 10px;
             table-layout: fixed;
-            /* Key Change: Fixed table layout */
         }
 
         .khata-table,
@@ -40,34 +293,23 @@
             border: 1px solid rgb(17, 20, 215);
         }
 
-        /* Add padding to all table cells */
         .khata-table td,
         .khata-table th {
             padding: 5px;
             text-align: center;
             vertical-align: middle;
             word-wrap: break-word;
-            /* Key Change: Allow text wrapping */
             overflow: hidden;
-            /* Hide any overflow */
         }
 
-
-
-        /* New Footer Styles (Moved outside @media print) */
         .page-footer {
-            /* position: fixed; Removed fixed*/
             bottom: 10px;
-            /* left: 10px; */
             width: calc(100% - 20px);
-            /* Full width minus left/right padding */
             font-size: 16px;
             font-weight: bold;
             display: flex;
             flex-direction: column;
-            /* margin-top: 20px; Removed for proper alignment*/
             padding-top: 60px;
-            /* Added padding-top for space*/
         }
 
         .footer-row {
@@ -91,123 +333,6 @@
             margin: 0;
         }
 
-        @media print {
-            .no-print {
-                display: none;
-            }
-
-            @page {
-                margin: 5mm;
-                border: 1px solid black;
-                padding: 8px;
-            }
-
-            body {
-                margin: 0;
-                /* Remove body margin in print */
-                min-height: auto;
-                /*position: relative; Remove this as footer is fixed  */
-                /* Add position relative to body */
-            }
-
-            .khata-group {
-                page-break-after: always;
-                margin-bottom: 0px;
-                position: relative;
-                display: flex;
-                /* Added to make flex work*/
-                flex-direction: column;
-                /* Added to make flex work*/
-                justify-content: space-between;
-                /* Added to make flex work*/
-
-            }
-
-            .khata-group .page-footer {
-                position: relative;
-                margin-top: auto;
-                /* Push footer to bottom */
-            }
-
-            .khata-group:last-child {
-                page-break-after: auto;
-            }
-
-            .telugu-header-print {
-                display: block;
-                text-align: left;
-                margin-bottom: 0px;
-                width: 100%;
-            }
-
-            .telugu-header-print h3 {
-                margin-top: 10px;
-                text-align: center;
-                font-weight: bold;
-            }
-
-            .telugu-header-print p {
-                margin: 0px;
-                text-align: left;
-
-                font-weight: normal;
-            }
-
-            .signature-column {
-                width: 150px;
-            }
-
-            .page-footer {
-                position: relative;
-                bottom: auto;
-            }
-
-            #teluguHeader {
-
-                display: none !important;
-            }
-
-            /* Print Specific Table Column Widths */
-            .khata-table.print-table col:nth-child(1) {
-                width: 100px;
-                /* Set fixed width for columns 1; */
-                max-width: max-content;
-            }
-
-            .khata-table.print-table col:nth-child(2) {
-                width: 80px;
-                /* Set fixed width for columns 1 and 2;*/
-            }
-
-            .khata-table.print-table col:nth-child(5) {
-                width: 110px;
-                /* Set fixed width for columns 1, 2, and 5 */
-            }
-
-            .khata-table.print-table col:nth-child(3),
-            .khata-table.print-table col:nth-child(4) {
-                width: calc((100% - 450px) / 2);
-                /* (100% - 3 * 100px (cols 1,2,5) - 150px (signature))/ 2 */
-            }
-
-            .khata-table.print-table .signature-column {
-                width: 150px !important;
-            }
-
-            .khata-table.print-table td,
-            .khata-table.print-table th {
-                word-break: break-word;
-                white-space: normal;
-            }
-
-            /* .khata-table.print-table {
-                margin-left: 10px;
-                margin-right: 10px, ;
-            } */
-
-        }
-
-        /* Non-print styles for the table */
         #previewTable {
             width: 100%;
             border-collapse: collapse;
@@ -222,7 +347,6 @@
             vertical-align: middle;
         }
 
-        /* Add styles for the mapping table to make it aligned */
         #mappingTable {
             width: auto;
             border-collapse: collapse;
@@ -261,7 +385,6 @@
             font-weight: normal;
         }
 
-        /* Add a container for better alignment of the select column */
         .select-container {
             width: 150px;
             display: inline-block;
@@ -274,58 +397,70 @@
 </head>
 
 <body>
-    <div class="no-print">
-        <h2>Upload CSV and Map Columns</h2>
+    <div class="container">
+        <div class="no-print">
+            <div class="form-section">
+                <h2>Upload CSV and Map Columns</h2>
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label for="districtName">District Name:</label>
+                        <input type="text" id="districtName" placeholder="Enter District Name">
+                    </div>
+                    <div class="input-group">
+                        <label for="mandalName">Mandal Name:</label>
+                        <input type="text" id="mandalName" placeholder="Enter Mandal Name">
+                    </div>
+                    <div class="input-group">
+                        <label for="villageName">Village Name:</label>
+                        <input type="text" id="villageName" placeholder="Enter Village Name">
+                    </div>
+                    <div class="input-group">
+                        <label for="start_date">Date:</label>
+                        <input type="date" id="start_date">
+                    </div>
+                    <div class="input-group">
+                        <label for="start_time">Time:</label>
+                        <input type="time" id="start_time">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <input type="file" id="csvFile" accept=".csv">
+                </div>
+            </div>
 
-        <h2>Enter Location Details</h2>
-        <div style="margin-bottom: 15px;">
-            <label for="districtName">District Name:</label>
-            <input type="text" id="districtName" placeholder="Enter District Name">
+            <div class="table-container">
+                <table id="mappingTable" border="1" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th>Map To</th>
+                            <th>CSV Column</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
 
-            <label for="mandalName">Mandal Name:</label>
-            <input type="text" id="mandalName" placeholder="Enter Mandal Name">
-
-            <label for="villageName">Village Name:</label>
-            <input type="text" id="villageName" placeholder="Enter Village Name">
-            <label for="start_date">Date:</label>
-            <input type="date" id="start_date" placeholder="Enter Date of Commencement">
-            <label for="start_time">Time:</label>
-            <input type="time" id="start_time" placeholder="Enter time of Commencement">
+            <button id="submitMapping" style="display:none;">Submit Mapping</button>
+            <button onclick="window.print();">Print</button>
         </div>
 
-        <input type="file" id="csvFile" accept=".csv">
-        <br><br>
-        <table id="mappingTable" border="1" style="display:none;">
-            <thead>
-                <tr>
-                    <th>Map To</th>
-                    <th>CSV Column</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        <br>
-        <button id="submitMapping" style="display:none;">Submit Mapping</button>
-        <br><br>
-        <button onclick="window.print();">Print</button>
+        <div id="teluguHeader" class="">
+            <h3>ఫారం-19</h3>
+            <h3>భూ యాజమాన్య దారులకు నోటీసు</h3>
+            <h3>భూ నిజ నిర్దారణ కొరకు</h3>
+            <p>
+                1) సర్వే సహాయక సంచాలకులు Assistant Director వారి నోటిఫికేషన్ నెం. 6(i), అనుసరించి, ........ జిల్లా,
+                .......... మండలం, ........... గ్రామములో సీమానిర్ణయం (demarcation) మరియు సర్వే పనులు
+                ...................... తేదీన .... గం.ని.లకు ప్రారంభిచబడును అని తెలియజేయడమైనది.<br>
+                2) సర్వే మరియు సరిహద్దుల చట్టం, 1923లోని నియమ నిబంధనలు అనుసరించి సర్వే సమయం నందు ఈ క్రింది షెడ్యూల్ లోని
+                భూ
+                యజమానులు భూమి వద్ద హాజరై మీ పొలము యొక్క సరిహద్దులను చూపించి, తగిన సమాచారం మరియు అవసరమైన సహాయ సహకారములు
+                అందించవలసినదిగా తెలియజేయడమైనది.
+            </p>
+        </div>
+        <div id="previewContainer">
+        </div>
     </div>
-    <div id="teluguHeader" class="">
-        <h3>ఫారం-19</h3>
-        <h3>భూ యాజమాన్య దారులకు నోటీసు</h3>
-        <h3>భూ నిజ నిర్దారణ కొరకు</h3>
-        <p>
-            1) సర్వే సహాయక సంచాలకులు Assistant Director వారి నోటిఫికేషన్ నెం. 6(i), అనుసరించి, ........ జిల్లా,
-            .......... మండలం, ........... గ్రామములో సీమానిర్ణయం (demarcation) మరియు సర్వే పనులు
-            ...................... తేదీన .... గం.ని.లకు ప్రారంభిచబడును అని తెలియజేయడమైనది.<br>
-            2) సర్వే మరియు సరిహద్దుల చట్టం, 1923లోని నియమ నిబంధనలు అనుసరించి సర్వే సమయం నందు ఈ క్రింది షెడ్యూల్ లోని భూ
-            యజమానులు భూమి వద్ద హాజరై మీ పొలము యొక్క సరిహద్దులను చూపించి, తగిన సమాచారం మరియు అవసరమైన సహాయ సహకారములు
-            అందించవలసినదిగా తెలియజేయడమైనది.
-        </p>
-    </div>
-    <div id="previewContainer">
-    </div>
-    <br>
-
 
     <script>
         let csvData = [];
@@ -544,11 +679,6 @@
             khataGroup.appendChild(table);
             return table;
         }
-
-
-
-
-
     </script>
 </body>
 
